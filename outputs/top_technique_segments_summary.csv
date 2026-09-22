@@ -1,6 +1,6 @@
 Severity_Rank,Technique,Top_Segment_Definition,Segments_Generated,Top_Segment_Pop_Pct,Top_Segment_Exp_Pct,Max_PSI,Max_Gini_Drop,Max_KS_Drop,Max_BR_Shift_Pct,Exposure_Drift,Calibration_Drift,Root_Cause_Feature,Root_Cause_Score,Business_Impact_Score,Top_Segment_EAD,Execution_Time_Sec,Deterministic,Explainability,Overall_Score_100
-1,Feature Binning,region = West,11,27.4,40.17,0.241,0.3299,0.3904,-56.57%,0.3081,-2.3553,region,0.8035,0.4017,"$517,872,657",32.1215,Yes,High,71.5
-2,K-Means Clustering,Cluster_4: region != South AND occupation != Business AND age < 29.5,8,27.4,40.17,0.241,0.471,0.1011,-56.57%,0.3081,-0.7351,age,0.6795,0.1387,"$517,872,657",12.5055,Yes*,Medium,58.6
-3,Gradient Boosting,region != North AND occupation != Salaried AND age < 49.5,10,33.34,43.55,0.1301,0.8248,0.5406,-48.1%,0.248,-0.561,age,0.9963,0.2403,"$561,550,349",12.5303,Yes,Medium,58.0
-4,AutoSlicer,region = West,10,27.4,40.17,0.241,0.2134,0.2389,-56.57%,0.3081,-0.7351,age,0.6668,0.1387,"$517,872,657",5.0441,Yes,Medium,53.6
-5,Drift Localization Tree,"income >= 37,982 AND income < 50,007.5 AND age < 28.5",8,11.44,16.85,0.0947,0.4779,0.048,-57.98%,0.1282,-0.7532,age,0.9239,0.0237,"$217,252,800",0.7333,Yes,High,25.8
+1,Feature Binning,employment_type = SelfEmployed,20,23.96,24.31,0.1511,0.6029,0.6442,28.12%,0.1234,1.0593,employment_type,0.782,0.2431,"$201,252,538",104.8501,Yes,High,78.2
+2,Gradient Boosting,bureau_score < 642.5 AND dti >= 42.43 AND age >= 49.5,10,24.02,26.36,0.3084,0.0935,0.1318,24.68%,0.2081,0.4484,dti,0.7496,0.0863,"$218,291,731",25.1203,Yes,Medium,53.3
+3,AutoSlicer,employment_type = SelfEmployed,10,23.96,24.31,0.0922,0.1256,0.1142,24.19%,0.1234,0.6245,dti,0.9017,0.0661,"$201,252,538",19.0796,Yes,Medium,22.8
+4,Drift Localization Tree,bureau_score < 645.5 AND dti >= 40.32 AND dti < 55.39 AND age < 43.5,4,7.84,6.76,0.1642,0.0,0.0,11.77%,-0.001,0.0262,bureau_score,0.2399,0.0053,"$55,992,411",1.275,Yes,High,10.1
+5,K-Means Clustering,Cluster_6: utilization < 58.66 AND age < 37.5 AND dti < 55.14 AND bureau_score < 738.5,6,4.88,4.12,0.0951,0.0501,0.0166,13.01%,-0.0762,0.1886,bureau_score,0.383,0.0023,"$34,107,478",18.0811,Yes*,Medium,4.1

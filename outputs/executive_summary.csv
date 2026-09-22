@@ -1,43 +1,43 @@
 Section,Key,Value
 PORTFOLIO HEALTH,Overall Status,CRITICAL - Significant model degradation and/or population drift detected.
-PORTFOLIO HEALTH,Most Sensitive Technique for Drift Detection,Feature Binning (Score: 71.5/100)
-PORTFOLIO HEALTH,Max Gini Drop Detected,0.8248
-PORTFOLIO HEALTH,Max PSI Detected,0.2410
-PORTFOLIO HEALTH,Max |Calibration Drift| Detected,2.3553
-PORTFOLIO HEALTH,Total Segments Analyzed,47
-TOP WORST SEGMENTS,Rank 1: Gradient Boosting,region != North AND occupation != Salaried AND age < 49.5
-TOP WORST SEGMENTS,  -> Gini Drop,0.5594
-TOP WORST SEGMENTS,  -> Exposure Drift,0.2480
-TOP WORST SEGMENTS,  -> Calibration Drift (signed),-0.5610
-TOP WORST SEGMENTS,  -> Root Cause Feature,age
-TOP WORST SEGMENTS,  -> Root Cause Score,0.9963
-TOP WORST SEGMENTS,Rank 2: Drift Localization Tree,"income >= 37,982 AND income < 50,007.5 AND age < 28.5"
-TOP WORST SEGMENTS,  -> Gini Drop,0.1327
-TOP WORST SEGMENTS,  -> Exposure Drift,0.1282
-TOP WORST SEGMENTS,  -> Calibration Drift (signed),-0.7532
-TOP WORST SEGMENTS,  -> Root Cause Feature,age
-TOP WORST SEGMENTS,  -> Root Cause Score,0.9239
-TOP WORST SEGMENTS,Rank 3: Feature Binning,region = West
-TOP WORST SEGMENTS,  -> Gini Drop,0.0193
-TOP WORST SEGMENTS,  -> Exposure Drift,0.3081
-TOP WORST SEGMENTS,  -> Calibration Drift (signed),-2.3553
-TOP WORST SEGMENTS,  -> Root Cause Feature,region
-TOP WORST SEGMENTS,  -> Root Cause Score,0.8035
-TOP WORST SEGMENTS,Rank 4: K-Means Clustering,Cluster_4: region != South AND occupation != Business AND age < 29.5
-TOP WORST SEGMENTS,  -> Gini Drop,0.0193
-TOP WORST SEGMENTS,  -> Exposure Drift,0.3081
-TOP WORST SEGMENTS,  -> Calibration Drift (signed),-0.7351
-TOP WORST SEGMENTS,  -> Root Cause Feature,age
-TOP WORST SEGMENTS,  -> Root Cause Score,0.6795
-TOP WORST SEGMENTS,Rank 5: AutoSlicer,region = West
-TOP WORST SEGMENTS,  -> Gini Drop,0.0193
-TOP WORST SEGMENTS,  -> Exposure Drift,0.3081
-TOP WORST SEGMENTS,  -> Calibration Drift (signed),-0.7351
-TOP WORST SEGMENTS,  -> Root Cause Feature,age
-TOP WORST SEGMENTS,  -> Root Cause Score,0.6668
-ROOT CAUSE ANALYSIS,Top Drifting Features (across all segments),"age, region, income"
-RECOMMENDATIONS,1. Immediate Action,Investigate 'region != North AND occupation != Salaried AND age < 49.5' - highest severity score
-RECOMMENDATIONS,2. Root Cause Investigation,Focus on feature 'age' - highest drift within worst segment
+PORTFOLIO HEALTH,Most Sensitive Technique for Drift Detection,Feature Binning (Score: 78.2/100)
+PORTFOLIO HEALTH,Max Gini Drop Detected,0.6029
+PORTFOLIO HEALTH,Max PSI Detected,0.3084
+PORTFOLIO HEALTH,Max |Calibration Drift| Detected,1.0593
+PORTFOLIO HEALTH,Total Segments Analyzed,50
+TOP WORST SEGMENTS,Rank 1: AutoSlicer,employment_type = SelfEmployed
+TOP WORST SEGMENTS,  -> Gini Drop,0.0430
+TOP WORST SEGMENTS,  -> Exposure Drift,0.1234
+TOP WORST SEGMENTS,  -> Calibration Drift (signed),0.6245
+TOP WORST SEGMENTS,  -> Root Cause Feature,dti
+TOP WORST SEGMENTS,  -> Root Cause Score,0.9017
+TOP WORST SEGMENTS,Rank 2: Feature Binning,employment_type = SelfEmployed
+TOP WORST SEGMENTS,  -> Gini Drop,0.0430
+TOP WORST SEGMENTS,  -> Exposure Drift,0.1234
+TOP WORST SEGMENTS,  -> Calibration Drift (signed),1.0593
+TOP WORST SEGMENTS,  -> Root Cause Feature,employment_type
+TOP WORST SEGMENTS,  -> Root Cause Score,0.7820
+TOP WORST SEGMENTS,Rank 3: Gradient Boosting,bureau_score < 642.5 AND dti >= 42.43 AND age >= 49.5
+TOP WORST SEGMENTS,  -> Gini Drop,0.0540
+TOP WORST SEGMENTS,  -> Exposure Drift,0.2081
+TOP WORST SEGMENTS,  -> Calibration Drift (signed),0.4484
+TOP WORST SEGMENTS,  -> Root Cause Feature,dti
+TOP WORST SEGMENTS,  -> Root Cause Score,0.7496
+TOP WORST SEGMENTS,Rank 4: Gradient Boosting,employment_type = SelfEmployed AND dti < 70.08 AND bureau_score < 648.5
+TOP WORST SEGMENTS,  -> Gini Drop,0.0909
+TOP WORST SEGMENTS,  -> Exposure Drift,0.1104
+TOP WORST SEGMENTS,  -> Calibration Drift (signed),0.6276
+TOP WORST SEGMENTS,  -> Root Cause Feature,dti
+TOP WORST SEGMENTS,  -> Root Cause Score,0.6723
+TOP WORST SEGMENTS,Rank 5: Feature Binning,bureau_score is Missing
+TOP WORST SEGMENTS,  -> Gini Drop,0.1102
+TOP WORST SEGMENTS,  -> Exposure Drift,0.0602
+TOP WORST SEGMENTS,  -> Calibration Drift (signed),0.6091
+TOP WORST SEGMENTS,  -> Root Cause Feature,bureau_score
+TOP WORST SEGMENTS,  -> Root Cause Score,0.5977
+ROOT CAUSE ANALYSIS,Top Drifting Features (across all segments),"bureau_score, dti, utilization"
+RECOMMENDATIONS,1. Immediate Action,Investigate 'employment_type = SelfEmployed' - highest severity score
+RECOMMENDATIONS,2. Root Cause Investigation,Focus on feature 'dti' - highest drift within worst segment
 RECOMMENDATIONS,3. Recalibration,Consider model recalibration for segments with calibration drift > 0.05
 RECOMMENDATIONS,4. Monitoring Thresholds,Set up automated alerts for PSI > 0.10 and Gini Drop > 0.10
 RECOMMENDATIONS,5. Most Sensitive Technique,Use Feature Binning for ongoing monitoring - highest drift-detection sensitivity

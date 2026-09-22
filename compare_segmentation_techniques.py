@@ -43,24 +43,24 @@ TECHNIQUE_PROPERTIES = {
     "Gradient Boosting":       {"Deterministic": "Yes",  "Explainability_Label": "Medium"},
 }
 
-REQUESTED_FEATURES = ["age", "income", "region", "occupation"]
-REQUESTED_NUMERIC_COLS = ["age", "income"]
-REQUESTED_CATEGORICAL_COLS = ["region", "occupation"]
+REQUESTED_FEATURES = ["age", "bureau_score", "dti", "utilization", "region", "employment_type"]
+REQUESTED_NUMERIC_COLS = ["age", "bureau_score", "dti", "utilization"]
+REQUESTED_CATEGORICAL_COLS = ["region", "employment_type"]
 
 
 def build_feature_schema(dev_df):
-    """Create a schema that restricts segmentation to the four requested features."""
+    """Create a schema that restricts segmentation to the six requested features."""
     dev_columns = set(dev_df.columns)
     exclude_cols = [
         col for col in dev_df.columns
-        if col not in REQUESTED_FEATURES + ["target", "score", "ead", "customer_id"]
+        if col not in REQUESTED_FEATURES + ["default_flag", "pd_score", "ead", "customer_id"]
     ]
     return SchemaConfig(
-        target_col="target",
-        score_col="score",
+        target_col="default_flag",
+        score_col="pd_score",
         weight_col="ead",
         id_cols=["customer_id"] if "customer_id" in dev_columns else [],
-        exclude_cols=exclude_cols + ["target", "score", "ead", "customer_id"],
+        exclude_cols=exclude_cols + ["default_flag", "pd_score", "ead", "customer_id"],
         numeric_cols=REQUESTED_NUMERIC_COLS,
         categorical_cols=REQUESTED_CATEGORICAL_COLS,
     )
@@ -234,7 +234,7 @@ def benchmark_all_techniques(dev_df=None, mon_df=None, save_outputs=True, schema
     schema_cfg lets a caller supply a SchemaConfig for a differently-shaped
     dataset (e.g. the v2 trend-analysis schema); when omitted, this is
     build_feature_schema(dev_df) exactly as before -- the hardcoded
-    age/income/region/occupation schema.
+    age/bureau_score/dti/utilization/region/employment_type schema.
     """
     print("=" * 115)
     print("SAS RISK MANAGEMENT - AUTO SEGMENTATION TECHNIQUES BENCHMARKING & COMPARISON")
