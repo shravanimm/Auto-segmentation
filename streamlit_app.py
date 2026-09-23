@@ -41,6 +41,7 @@ from tools.data_quality_tool import build_context as build_dq_context
 from tools.data_drift_tool import build_context as build_drift_context
 from tools.segment_analysis_tool import build_context as build_seg_context
 from agents.model_rca_agent import answer as rca_answer
+from agents.model_rca_agent_agentic import answer as rca_answer_agentic
 from utils.display_labels import (
     SECTION_LABELS as DRIFT_SECTION_LABELS,
     SECTION_EXPLANATIONS as DRIFT_SECTION_EXPLANATIONS,
@@ -2353,16 +2354,24 @@ with tab_home:
                 if not home_glance_df.empty else ""
             )
 
+            home_agentic_rca = st.session_state.get("home_agentic_rca", False)
+
             def _home_ask(question: str):
                 if "home_qa_history" not in st.session_state or not isinstance(st.session_state["home_qa_history"], dict):
                     st.session_state["home_qa_history"] = {}
                 history = st.session_state["home_qa_history"].setdefault(home_selected, [])
+                tools_used = None
                 try:
                     with st.spinner("Thinking..."):
-                        answer = rca_answer(question, home_dq_ctx, home_drift_ctx, home_seg_ctx, home_glance_ctx)
+                        if home_agentic_rca:
+                            answer, tools_used = rca_answer_agentic(
+                                question, home_dq_ctx, home_drift_ctx, home_seg_ctx, home_glance_ctx
+                            )
+                        else:
+                            answer = rca_answer(question, home_dq_ctx, home_drift_ctx, home_seg_ctx, home_glance_ctx)
                 except Exception as e:
                     answer = f"Could not generate an answer: {e}"
-                history.append((question, answer))
+                history.append((question, answer, tools_used))
                 st.rerun()
 
             with st.container(border=True, key="home_chat_panel"):
@@ -2406,6 +2415,14 @@ with tab_home:
                         grounding += f" (vs. baseline **{home_dev_filename}**)"
                     st.caption(f"Grounded in {grounding}. Switch the dropdown on the left to ground the chat "
                                "in a different dataset.")
+                    st.toggle(
+                        "🧪 Agentic tool-routing (beta)",
+                        value=False,
+                        key="home_agentic_rca",
+                        help="When on, the agent reads your question first and calls only the DQ/DD/SEG "
+                             "tool(s) it decides are relevant, instead of always seeing all of them. "
+                             "Experimental -- turn off to go back to the current behavior.",
+                    )
 
                     if "home_qa_history" not in st.session_state or not isinstance(st.session_state["home_qa_history"], dict):
                         st.session_state["home_qa_history"] = {}
@@ -2433,10 +2450,13 @@ with tab_home:
                                 if st.button(suggestion, key=f"home_chat_suggest_{suggestion}", use_container_width=True):
                                     _home_ask(suggestion)
                     else:
-                        for q, a in home_qa_history:
+                        for entry in home_qa_history:
+                            q, a, tools_used = entry if len(entry) == 3 else (*entry, None)
                             with st.chat_message("user"):
                                 st.write(q)
                             with st.chat_message("assistant", avatar="🤖"):
+                                if tools_used:
+                                    st.caption("Tools called: " + ", ".join(tools_used))
                                 st.write(a)
 
                     with st.container(key="home_chat_quick"):

@@ -29,6 +29,14 @@ def build_rca_prompt(question: str, context_text: str) -> str:
     return _load_template("rca_prompt.md").format(context_text=context_text, question=question)
 
 
+def build_rca_agentic_system_prompt() -> str:
+    """System prompt for the tool-calling RCA agent (agents/model_rca_agent_agentic.py).
+    Static text, no placeholders -- unlike build_rca_prompt, the computed
+    context isn't injected here, it's returned by the tool calls instead."""
+
+    return _load_template("rca_prompt_agentic.md")
+
+
 def build_segment_prompt(segment_info: dict) -> str:
 
     return _load_template("segment_prompt.md").format(
