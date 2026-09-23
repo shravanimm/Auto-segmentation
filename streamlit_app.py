@@ -1472,7 +1472,7 @@ with tab_home:
             position: fixed;
             top: 84px;
             right: 28px;
-            width: 400px;
+            width: 460px;
             height: calc(100vh - 110px);
             overflow-y: auto;
             overflow-x: hidden;
@@ -1972,7 +1972,7 @@ with tab_home:
                 st.rerun()
 
     if st.session_state["home_chat_open"]:
-        # Reserve room for the fixed-position chat panel (400px wide, 28px
+        # Reserve room for the fixed-position chat panel (460px wide, 28px
         # from the right edge) by shrinking the main content area itself,
         # rather than relying on st.columns' flex ratio for it. A column
         # whose only content is position:fixed collapses to ~0 width (its
@@ -1996,7 +1996,7 @@ with tab_home:
             """
             <style>
             [data-testid="stMainBlockContainer"] {
-                width: calc(100% - 448px) !important;
+                width: calc(100% - 508px) !important;
                 align-self: flex-start !important;
                 transition: width 0.15s ease;
             }
