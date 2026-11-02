@@ -1,0 +1,102 @@
+{
+  "dev": "data/development_data_5000_shap.csv",
+  "mon": "data/monitoring_data_5000_shap.csv",
+  "autoslicer": {
+    "pool": 80,
+    "returned": 10,
+    "config": {
+      "param_grid": null,
+      "max_combo_depth": 2,
+      "depth_improvement_tolerance": 0.05,
+      "beam_width": 10,
+      "min_beam_width": 8,
+      "beam_retain_ratio": 0.5,
+      "top_n": 10,
+      "numeric_bins": 4,
+      "min_support": null,
+      "min_abs_count": null,
+      "min_events_per_slice": 30,
+      "significance_alpha": 0.05,
+      "max_segment_pct": 0.35,
+      "overlap_jaccard_threshold": 0.7,
+      "random_state": 42
+    }
+  },
+  "drift_tree": {
+    "pool": 4,
+    "returned": 4,
+    "config": {
+      "param_grid": null,
+      "max_depth": 4,
+      "min_samples_leaf": 0.04,
+      "random_state": 42,
+      "top_n": 10,
+      "min_support": null,
+      "min_abs_count": null,
+      "min_events_per_slice": 30,
+      "significance_alpha": 0.05,
+      "max_segment_pct": 0.35
+    }
+  },
+  "gradient_boosting": {
+    "pool": 116,
+    "returned": 10,
+    "config": {
+      "param_grid": null,
+      "n_estimators": 50,
+      "max_depth": 3,
+      "learning_rate": 0.1,
+      "min_samples_leaf": 0.05,
+      "random_state": 42,
+      "top_n": 10,
+      "max_trees_scanned": null,
+      "min_support": null,
+      "min_abs_count": null,
+      "min_events_per_slice": 30,
+      "significance_alpha": 0.05,
+      "max_segment_pct": 0.35,
+      "overlap_jaccard_threshold": 0.7
+    }
+  },
+  "kmeans": {
+    "pool": 6,
+    "returned": 6,
+    "config": {
+      "param_grid": null,
+      "k_range": [
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "min_cluster_pct": 0.02,
+      "seed": 42,
+      "max_tree_depth": 4,
+      "drift_aware": true,
+      "drift_weight": 0.4,
+      "top_n": 10,
+      "min_support": null,
+      "min_abs_count": null,
+      "min_events_per_slice": 30,
+      "significance_alpha": 0.05,
+      "max_segment_pct": 0.35
+    }
+  },
+  "feature_binning": {
+    "pool": null,
+    "returned": 20,
+    "config": {
+      "param_grid": null,
+      "max_features": 30,
+      "max_bins": 8,
+      "min_bin_pct": 0.01,
+      "max_segment_pct": 0.35,
+      "overlap_jaccard_threshold": 0.7,
+      "top_n": 20,
+      "bootstrap_top_n": 40,
+      "n_iter": 50,
+      "alpha": 0.1
+    }
+  }
+}
