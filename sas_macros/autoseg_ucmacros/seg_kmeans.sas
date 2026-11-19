@@ -121,7 +121,9 @@
 
     %seg_eval_pool(cand=_km_cand, defs=_km_cand, rules=_km_rl, shap_cols=&shap_cols);
     %seg_publish(technique=K-Means Clustering, out_prefix=&out_prefix, top_n=&top_n, dedup=N,
-                 alpha=&significance_alpha, dropvars=leaf);
+                 alpha=&significance_alpha, dropvars=leaf, closure=LEFT, notmissing=N,
+                 member_type=NEAREST_CENTROID,
+                 member_note=Membership is the nearest cluster centre and the rule only describes it - see Rule_Precision and Rule_Recall);
 
     /* ---- extras: diagnostics + what a consumer needs to apply the clusters ---- */
     data &out_prefix._k_diagnostics; set _km_diag; run;

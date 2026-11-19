@@ -210,6 +210,11 @@
         order by t.Rank, f.feat_idx;
     quit;
 
+    /* self-explanatory outputs: exact WHERE clause (a bin may cover several categories - they are OR-ed) */
+    %seg_add_explain(seg=&out_prefix._segments, rules=&out_prefix._rules, closure=RIGHT, notmissing=Y,
+                     member_type=EXACT_RULE, sigvar=Significant, fbmode=Y,
+                     member_note=Numeric bins exclude missing values - missing values form their own bin);
+
     data &out_prefix._pool; set _fb_scored; run;
 
     data &out_prefix._log;

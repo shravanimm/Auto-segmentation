@@ -1,11 +1,3 @@
-/* ============================================================================
-   COMBINED_viya_studio.sas
-   Paste this ENTIRE file into the Code editor in SAS Data and AI Studio and
-   click Run. It connects to the CAS caslib where v2_development_data and
-   v2_monitoring_2026_01 already live (per SAS Data Hub), then defines and
-   runs the Data Quality + Drift macros against them.
-   ============================================================================ */
-
 /* ---- Point at the existing CAS tables (no import needed - already loaded) ---- */
 cas;
 libname public cas caslib="Public";
@@ -221,7 +213,7 @@ libname public cas caslib="Public";
 
 
 /* ============================================================================
-   20_drift_macros.sas — Data Drift (our own logic)
+   20_drift_macros.sas — Data Drift
    ============================================================================ */
 %macro drift_calc_wrapper(dev_dataset=, mon_dataset=, out_prefix=drift,
                            target_col=, score_col=, feature_cols=, categorical_cols=,

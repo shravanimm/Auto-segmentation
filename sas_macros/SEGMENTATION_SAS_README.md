@@ -124,8 +124,10 @@ Each is a candidate for a deliberate, documented fix:
 * The Feature Binning bootstrap table is ~`n_iter × rows` per candidate (fine for the demo).
 * Timing guide (5k rows): AutoSlicer ~1 min, Drift Tree seconds, Gradient Boosting 50 trees ~2-3 min,
   K-Means (k 8-12, n_init 10) several minutes, Feature Binning ~1 min.
-* Not ported: per-technique head-to-head table (`Overall_Score_100`), executive-summary text, multi-period
-  trend/forecast, LLM narrative (the latter should stay outside SAS).
+* Not ported: per-technique head-to-head table (`Overall_Score_100`), executive-summary text,
+  LLM narrative (the latter should stay outside SAS).
+* Trend analysis runs the whole module once per monitoring period (see section 8): allow
+  roughly (run time of one period) x (number of periods); test with `sg_cfg_optimize=N` first.
 
 ## 7. How to test (tomorrow)
 
@@ -141,3 +143,31 @@ Each is a candidate for a deliberate, documented fix:
 * Port-faithfully vs fix the quirks in §5 (recommended: faithful first, then fix each behind a switch).
 * Is statistical (not bit-exact) equivalence acceptable for K-Means and Feature Binning bootstrap?
 * Cirrus contract: who owns the AutoSlicer grid search (SAS side, `as_*_list`) vs the caller; output library (WORK vs a persisted caller library).
+
+## 8. Multi-period trend analysis (`core/multi_period_analysis.py`)
+
+Entry point `%csb_segmentation_trend_wrapper(dev_dta=, mon_dta=, period_col=, target_col=)`.
+`mon_dta` holds several periods (month / quarter / date column). For each period, in ascending order,
+the normal module runs (development vs that period) and each technique's worst `sg_cfg_tr_n_worst`
+segments (by Severity_Score) are recorded (`seg_trend_collect`). Then:
+
+| Macro | Python | Output |
+|---|---|---|
+| `seg_trend_metrics` | `compute_trend_metrics` | `<p>_summary`: Frequency, Recency_Factor, Consistency_Score, Trend_Impact_Score, SIS_Trend, Root_Cause_Score_Trend, Severity_Score_Trend |
+| `seg_trend_collect` | `build_segment_time_series` | `<p>_history`, `<p>_series` (month-by-month metrics per segment) |
+| `seg_trend_forecast` | `forecast_segment_scores` | `<p>_forecast`: OLS slope, R-squared, p-value, 95% prediction interval, Months_To_Breach, Early_Warning |
+
+Settings (global, `seg_config.sas`): `sg_cfg_tr_n_worst`, `tr_half_life`, `tr_w_freq/rec/cons`,
+`tr_weight`, `tr_alert`, `tr_horizon` - same defaults as `TrendAnalysisConfig`.
+Not ported: `track_recurring_worst_segments` (superseded by the trend summary) and the UI-only
+`reindex_segment_time_series` (fill the missing periods when plotting).
+
+Test: `python sas_macros/parity/export_trend_golden.py` then run `seg_execute_trend_viya.sas`
+(part A feeds the Python history to the SAS macros and prints PASS/FAIL; part B runs 6 real periods).
+
+### One trigger for both modes: `%csb_segmentation_run`
+
+Mirrors the Streamlit tab: `trend=N|Y` (run trend analysis?) and `techniques=` (which techniques; the
+cross-technique ranking is built from the chosen ones). `trend=N` -> `csb_segmentation_calc_wrapper`
+(`seg_*` tables); `trend=Y` (+ `period_col=`) -> `csb_segmentation_trend_wrapper` (`segtr_*` tables,
+including `segtr_cross_top10` ranked on `Severity_Score_Trend` / `Root_Cause_Score_Trend`, as in Streamlit).

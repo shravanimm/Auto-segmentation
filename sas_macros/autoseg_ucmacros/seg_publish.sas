@@ -12,7 +12,8 @@
    Column names follow the Python public output (Dev_Count ... Root_Cause_Score).
    ============================================================================ */
 %macro seg_publish(technique=, out_prefix=, top_n=10, dedup=Y, overlap=0.70, pool_size=30,
-                   alpha=0.05, dropvars=, portfolio_n=);
+                   alpha=0.05, dropvars=, portfolio_n=, closure=LEFT, notmissing=Y,
+                   member_type=EXACT_RULE, member_note=);
 
     %if not %length(&portfolio_n) %then %let portfolio_n = &top_n;
 
@@ -68,6 +69,10 @@
             from _sg_top t inner join _sg_fpsi_all f on t.cand_id = f.cand_id
             order by t.Rank, f.feat_idx;
         quit;
+
+        /* self-explanatory outputs: exact WHERE clause, plain-English summary, membership notes */
+        %seg_add_explain(seg=&out_prefix._segments, rules=&out_prefix._rules, closure=&closure,
+                         notmissing=&notmissing, member_type=&member_type, member_note=&member_note);
 
         proc sort data=_sg_top(where=(Statistically_Significant = 1)) out=_sg_pf;
             by descending Portfolio_Impact_Score cand_id;

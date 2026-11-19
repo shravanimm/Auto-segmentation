@@ -81,6 +81,46 @@ class FilteringThresholds:
 
 
 # ============================================================================
+# Outlier Handling Configuration
+# ============================================================================
+
+@dataclass
+class OutlierConfig:
+    """
+    Outlier detection / treatment (see utils/outliers.py). Bounds are always
+    fit on Development data only.
+
+    treatment="none" preserves legacy behaviour exactly; "clip" winsorizes
+    numeric model features to the dev-fitted fences.
+    """
+
+    treatment: str = "none"  # "none" | "clip"
+
+    # Double-MAD modified z-score cutoff (3.5 is the Iglewicz-Hoaglin standard).
+    mad_threshold: float = 3.5
+
+    # Fallback Tukey multiplier when MAD is 0 (3.0 = "far out").
+    iqr_multiplier: float = 3.0
+
+    # Fences are never tighter than this tail percentile (0.005 -> 0.5%/99.5%).
+    min_clip_pct: float = 0.005
+
+    # Skip features that are discrete/constant or too small to estimate.
+    min_unique: int = 10
+    min_rows: int = 30
+
+    # Business-rule hard limits per feature, e.g. {"age": (18, 100), "utilization": (0, None)}.
+    # Use None for an open side. Fences are clamped inside the range and values outside it
+    # are reported as range violations (invalid data), not statistical outliers.
+    valid_ranges: dict = field(default_factory=dict)
+
+    # Isolation Forest row-level flag (diagnostics).
+    multivariate: bool = True
+    contamination: float = 0.01
+    random_state: int = 42
+
+
+# ============================================================================
 # AutoSlicer Configuration
 # ============================================================================
 
@@ -157,6 +197,10 @@ class DLTConfig:
 
     param_grid: Optional[dict] = None
 
+    outlier: OutlierConfig = field(
+        default_factory=OutlierConfig
+    )
+
     # ------------------------------------------------------------------------
     # Tree parameters
     # ------------------------------------------------------------------------
@@ -203,6 +247,10 @@ class GBConfig:
     )
 
     param_grid: Optional[dict] = None
+
+    outlier: OutlierConfig = field(
+        default_factory=OutlierConfig
+    )
 
     # ------------------------------------------------------------------------
     # Gradient Boosting parameters
@@ -275,6 +323,10 @@ class KMeansConfig:
     )
 
     param_grid: Optional[dict] = None
+
+    outlier: OutlierConfig = field(
+        default_factory=OutlierConfig
+    )
 
     # ------------------------------------------------------------------------
     # K selection

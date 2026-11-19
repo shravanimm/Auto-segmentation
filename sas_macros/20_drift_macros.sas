@@ -1,6 +1,6 @@
 /* ============================================================================
    20_drift_macros.sas
-   Data Drift macros — our own logic (not ported from EDA): schema drift,
+   Data Drift macros — (not ported from EDA): schema drift,
    completeness drift, per-feature PSI (CSI), score-level PSI (System
    Stability Index), and target/event-rate drift. All computed from the real
    dev/monitoring data directly — no quantile-approximation needed, since we

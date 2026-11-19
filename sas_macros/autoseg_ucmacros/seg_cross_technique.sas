@@ -29,6 +29,8 @@
     data _xt_all;
         length Technique $40 Segment_Definition $1000 Root_Cause_Feature $64
                Dev_Count Mon_Count Dev_Pct Mon_Pct PSI Delta_BR Delta_Gini Delta_KS
+               Mon_Exposure_Pct Business_Impact_Score SIS_Raw DIS_Raw DIS_Symmetric Portfolio_Impact_Score
+               mean_feature_psi mean_shap_shift Exposure_Drift Calibration_Drift Delta_ECE
                Severity_Score Root_Cause_Score Statistically_Significant Rank 8;
         stop;
     run;
@@ -40,14 +42,18 @@
             %let hasos = %sysfunc(varnum(&dsid, Overall_Score));
             %let rc    = %sysfunc(close(&dsid));
             data _xt_one;
+                retain Mon_Exposure_Pct Business_Impact_Score SIS_Raw DIS_Raw DIS_Symmetric Portfolio_Impact_Score
+                       mean_feature_psi mean_shap_shift Exposure_Drift Calibration_Drift Delta_ECE .;   /* a technique without these columns leaves them missing */
                 set &p._segments;
                 %if &hasos > 0 %then %do;
                     Severity_Score = Overall_Score;
                     Statistically_Significant = Significant;
                 %end;
                 keep Technique Segment_Definition Root_Cause_Feature Dev_Count Mon_Count Dev_Pct Mon_Pct
-                     PSI Delta_BR Delta_Gini Delta_KS Severity_Score Root_Cause_Score
-                     Statistically_Significant Rank;
+                     PSI Delta_BR Delta_Gini Delta_KS Mon_Exposure_Pct Business_Impact_Score
+                     SIS_Raw DIS_Raw DIS_Symmetric Portfolio_Impact_Score
+                     mean_feature_psi mean_shap_shift Exposure_Drift Calibration_Drift Delta_ECE
+                     Severity_Score Root_Cause_Score Statistically_Significant Rank;
             run;
             proc append base=_xt_all data=_xt_one force; run;
         %end;

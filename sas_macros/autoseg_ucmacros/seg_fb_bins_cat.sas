@@ -111,7 +111,7 @@
             proc sql;
                 update _fb_b3 b set label =
                     (select case when l._lab = '__MISSING__' then "&f is Missing"
-                                 else cats("&f", ' IN (', strip(l._lab), ')') end
+                                 else cat("&f", ' IN (', strip(l._lab), ')') end
                      from _fb_lab l where l.bin_id = b.bin_id);
             quit;
         %end;

@@ -25,11 +25,18 @@ def build_feature_matrix(
     combined_df: pd.DataFrame,
     numeric_cols: list[str],
     categorical_cols: list[str],
+    outlier_fit: Optional[dict] = None,
 ) -> tuple[pd.DataFrame, dict]:
     """Build a numeric feature matrix suitable for tree-based classifiers.
 
     Returns ``(X_df, onehot_map)`` where *onehot_map* maps each generated
-    one-hot column name back to ``(original_col, category_value)``."""
+    one-hot column name back to ``(original_col, category_value)``.
+
+    If *outlier_fit* (from ``utils.outliers.fit_outlier_bounds``) is given,
+    numeric columns are winsorized to the dev-fitted fences."""
+    if outlier_fit:
+        from utils.outliers import clip_to_bounds
+        combined_df = clip_to_bounds(combined_df, outlier_fit)
     X = pd.DataFrame(index=combined_df.index)
     for c in numeric_cols:
         X[c] = combined_df[c].fillna(combined_df[c].median())

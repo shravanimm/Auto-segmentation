@@ -44,6 +44,7 @@ from utils.schema_detection import (
     auto_detect_shap_columns,
 )
 
+from utils.outliers import fit_outlier_bounds, log_outlier_summary
 from utils.preprocessing import (
     build_feature_matrix,
     extract_tree_rules,
@@ -386,11 +387,19 @@ class GradientBoostingSegmentationTechnique(
         # are not automatically used as GBDT segmentation predictors.
         # ==================================================================
 
+        outlier_fit = None
+        if cfg.outlier.treatment != "none":
+            outlier_fit = fit_outlier_bounds(
+                dev_df, schema["numeric_cols"], cfg.outlier
+            )
+            log_outlier_summary("GB", dev_df, mon_df, outlier_fit)
+
         X_df, onehot_map = (
             build_feature_matrix(
                 combined_df,
                 schema["numeric_cols"],
                 schema["categorical_cols"],
+                outlier_fit,
             )
         )
 

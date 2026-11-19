@@ -43,7 +43,7 @@
 
     /* ---- map: numeric columns first, then categories of each categorical column ---- */
     data &map;
-        length fidx 8 kind $1 src_idx 8 srcname $64 val $200;
+        length kind $1 src_idx 8 srcname $64 val $200;
         stop;
     run;
     %do j = 1 %to &nn;

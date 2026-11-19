@@ -1,13 +1,12 @@
 /* ============================================================================
    00_main_wrapper.sas
-   Top-level entry point — matches the wrapper pattern from the example
-   given (is_dq_req / is_drift_req flags, conditional %do blocks).
+   Entry point — matches the wrapper pattern from the example
+   (is_dq_req / is_drift_req flags, conditional %do blocks).
 
    Order flexibility: &order controls which stage runs first. Since neither
    stage depends on the output of the other (both work directly off dev_dta /
    mon_dta), this is just a matter of which %if branch runs first — no
-   real parallel execution attempted here (see the "no parallel processing
-   in base SAS macros" note from the design discussion).
+   real parallel execution attempted here.
 
    Requires (%include, in order): 10_dq_macros.sas, 20_drift_macros.sas
    ============================================================================ */

@@ -77,7 +77,8 @@
 
     %seg_eval_pool(cand=_dt_cand, defs=_dt_cand, rules=_dt_rl, shap_cols=&shap_cols);
     %seg_publish(technique=Drift Localization Tree, out_prefix=&out_prefix, top_n=&top_n,
-                 dedup=N, alpha=&significance_alpha, dropvars=leaf);
+                 dedup=N, alpha=&significance_alpha, dropvars=leaf, closure=LEFT, notmissing=N,
+                 member_note=Missing numeric values are replaced by the median of development and monitoring before the tree is applied);
 
     data &out_prefix._log; set &out_prefix._log; tree_leaves = %seg_nobs(_dt_c0); run;
     %let sg_premem = N;

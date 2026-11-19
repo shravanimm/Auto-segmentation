@@ -53,7 +53,7 @@
     %end;
 
     data _km_map;
-        length fidx 8 kind $1 src_idx 8 srcname $64 val $200 med 8 mean 8 std 8;
+        length kind $1 src_idx 8 srcname $64 val $200 med 8 mean 8 std 8;
         stop;
     run;
     %do j = 1 %to &nn;

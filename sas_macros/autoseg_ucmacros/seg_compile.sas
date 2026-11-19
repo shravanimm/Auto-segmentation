@@ -37,6 +37,13 @@
 %include "&_autoseg_ucmacros/seg_rank_dedup.sas";
 %include "&_autoseg_ucmacros/seg_eval_pool.sas";
 %include "&_autoseg_ucmacros/seg_publish.sas";
+/* ---- automatic schema, global config, auto-optimisation helpers, explainability ---- */
+%include "&_autoseg_ucmacros/seg_config.sas";
+%include "&_autoseg_ucmacros/seg_detect_schema.sas";
+%include "&_autoseg_ucmacros/seg_grid.sas";
+%include "&_autoseg_ucmacros/seg_metric_dictionary.sas";
+%include "&_autoseg_ucmacros/seg_apply_labels.sas";
+%include "&_autoseg_ucmacros/seg_add_explain.sas";
 
 /* ---- CART engine (Drift Tree, Gradient Boosting, K-Means rules) ---- */
 %include "&_autoseg_ucmacros/seg_tree_matrix.sas";
@@ -54,6 +61,7 @@
 
 /* ---- Drift Tree / Gradient Boosting ---- */
 %include "&_autoseg_ucmacros/seg_drift_tree.sas";
+%include "&_autoseg_ucmacros/seg_drift_tree_grid.sas";
 %include "&_autoseg_ucmacros/seg_gradient_boosting.sas";
 
 /* ---- K-Means ---- */
@@ -73,10 +81,21 @@
 %include "&_autoseg_ucmacros/seg_fb_bootstrap.sas";
 %include "&_autoseg_ucmacros/seg_fb_score.sas";
 %include "&_autoseg_ucmacros/seg_feature_binning.sas";
+%include "&_autoseg_ucmacros/seg_feature_binning_grid.sas";
 
 /* ---- cross-technique, entry point, parity tooling ---- */
 %include "&_autoseg_ucmacros/seg_cross_technique.sas";
+%include "&_autoseg_ucmacros/seg_viz_prepare.sas";
+%include "&_autoseg_ucmacros/seg_viz_prepare_trend.sas";
+%include "&_autoseg_ucmacros/seg_viz_charts.sas";
+%include "&_autoseg_ucmacros/seg_viz_publish_cas.sas";
+%include "&_autoseg_ucmacros/seg_viz_from_cas.sas";
+%include "&_autoseg_ucmacros/seg_trend_collect.sas";
+%include "&_autoseg_ucmacros/seg_trend_metrics.sas";
+%include "&_autoseg_ucmacros/seg_trend_forecast.sas";
 %include "&_autoseg_ucmacros/csb_segmentation_calc_wrapper.sas";
+%include "&_autoseg_ucmacros/csb_segmentation_trend_wrapper.sas";
+%include "&_autoseg_ucmacros/csb_segmentation_run.sas";
 %include "&_autoseg_ucmacros/seg_compare_to_golden.sas";
 
 %put NOTE: All segmentation macros compiled from &_autoseg_ucmacros;

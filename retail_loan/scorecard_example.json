@@ -1,0 +1,477 @@
+{
+  "schema_version": "0.1",
+  "model": {
+    "model_id": 4,
+    "name": "RLA_UD_MODEL2",
+    "version": 1,
+    "type": "application_scorecard",
+    "purpose": "Probability of Default",
+    "subject_of_analysis": "Retail Application",
+    "project_id": 4,
+    "abt": "RM_MDL.RLA_APPLICATION",
+    "target": {
+      "name": "REJECT_FLG",
+      "event_value": 1
+    },
+    "build_date": "2024-12-31"
+  },
+  "score": {
+    "min": 265,
+    "max": 850,
+    "higher_is_safer": true,
+    "cutoff": 521,
+    "decision": {
+      "below_cutoff": "REJECT_LIKELY",
+      "at_or_above_cutoff": "ACCEPT_LIKELY"
+    }
+  },
+  "inputs": [
+    {
+      "name": "AGE",
+      "type": "numeric",
+      "required": true
+    },
+    {
+      "name": "BUREAU_SCORE",
+      "type": "numeric",
+      "required": true
+    },
+    {
+      "name": "CREDIT_RANGE",
+      "type": "character",
+      "required": true
+    },
+    {
+      "name": "DEFAULTS_COUNT",
+      "type": "numeric",
+      "required": true
+    },
+    {
+      "name": "DEPENDANTS",
+      "type": "numeric",
+      "required": true
+    },
+    {
+      "name": "EMPLOYMENT_STATUS",
+      "type": "character",
+      "required": true
+    },
+    {
+      "name": "INQUIRIES_90_DAYS",
+      "type": "numeric",
+      "required": true
+    },
+    {
+      "name": "LIQUID_ASSETS",
+      "type": "numeric",
+      "required": true
+    },
+    {
+      "name": "MONTHLY_ALLOWANCE_INCOME",
+      "type": "numeric",
+      "required": true
+    },
+    {
+      "name": "TOTAL_MONTHLY_INCOME",
+      "type": "numeric",
+      "required": true
+    },
+    {
+      "name": "WORST_DELINQUENCY_12M",
+      "type": "numeric",
+      "required": true
+    }
+  ],
+  "scorecard": [
+    {
+      "name": "AGE",
+      "type": "numeric",
+      "bins": [
+        {
+          "lower": 18,
+          "lower_op": ">=",
+          "upper": 25,
+          "upper_op": "<=",
+          "points": 25
+        },
+        {
+          "lower": 25,
+          "lower_op": ">",
+          "upper": 35,
+          "upper_op": "<=",
+          "points": 30
+        },
+        {
+          "lower": 35,
+          "lower_op": ">",
+          "upper": 45,
+          "upper_op": "<=",
+          "points": 35
+        },
+        {
+          "lower": 45,
+          "lower_op": ">",
+          "upper": 60,
+          "upper_op": "<=",
+          "points": 40
+        },
+        {
+          "lower": 60,
+          "lower_op": ">",
+          "upper": 70,
+          "upper_op": "<=",
+          "points": 35
+        }
+      ],
+      "missing_points": 0,
+      "other_points": 0
+    },
+    {
+      "name": "BUREAU_SCORE",
+      "type": "numeric",
+      "bins": [
+        {
+          "lower": 300,
+          "lower_op": ">=",
+          "upper": 600,
+          "upper_op": "<=",
+          "points": 50
+        },
+        {
+          "lower": 600,
+          "lower_op": ">",
+          "upper": 630,
+          "upper_op": "<=",
+          "points": 93
+        },
+        {
+          "lower": 630,
+          "lower_op": ">",
+          "upper": 650,
+          "upper_op": "<=",
+          "points": 135
+        },
+        {
+          "lower": 650,
+          "lower_op": ">",
+          "upper": 720,
+          "upper_op": "<=",
+          "points": 199
+        },
+        {
+          "lower": 720,
+          "lower_op": ">",
+          "upper": 850,
+          "upper_op": "<=",
+          "points": 220
+        }
+      ],
+      "missing_points": 0,
+      "other_points": 0
+    },
+    {
+      "name": "CREDIT_RANGE",
+      "type": "character",
+      "bins": [
+        {
+          "values": [
+            "HIGH_RISK"
+          ],
+          "points": 15
+        },
+        {
+          "values": [
+            "SUBPRIME"
+          ],
+          "points": 43
+        },
+        {
+          "values": [
+            "NEAR_PRIME"
+          ],
+          "points": 59
+        },
+        {
+          "values": [
+            "PRIME"
+          ],
+          "points": 70
+        }
+      ],
+      "missing_points": 0,
+      "other_points": 0
+    },
+    {
+      "name": "DEFAULTS_COUNT",
+      "type": "numeric",
+      "bins": [
+        {
+          "values": [
+            0
+          ],
+          "points": 110
+        },
+        {
+          "values": [
+            2,
+            3
+          ],
+          "points": 20
+        }
+      ],
+      "missing_points": 0,
+      "other_points": 0
+    },
+    {
+      "name": "DEPENDANTS",
+      "type": "numeric",
+      "bins": [
+        {
+          "values": [
+            0,
+            1
+          ],
+          "points": 30
+        },
+        {
+          "values": [
+            2
+          ],
+          "points": 25
+        },
+        {
+          "values": [
+            3,
+            4
+          ],
+          "points": 20
+        }
+      ],
+      "missing_points": 0,
+      "other_points": 0
+    },
+    {
+      "name": "EMPLOYMENT_STATUS",
+      "type": "character",
+      "bins": [
+        {
+          "values": [
+            "EMPLOYED"
+          ],
+          "points": 30
+        },
+        {
+          "values": [
+            "SELF_EMPLOYED"
+          ],
+          "points": 30
+        },
+        {
+          "values": [
+            "BUSINESS_OWNER"
+          ],
+          "points": 30
+        }
+      ],
+      "missing_points": 0,
+      "other_points": 0
+    },
+    {
+      "name": "INQUIRIES_90_DAYS",
+      "type": "numeric",
+      "bins": [
+        {
+          "lower": 0,
+          "lower_op": ">=",
+          "upper": 2,
+          "upper_op": "<=",
+          "points": 40
+        },
+        {
+          "lower": 2,
+          "lower_op": ">",
+          "upper": 5,
+          "upper_op": "<=",
+          "points": 33
+        },
+        {
+          "lower": 5,
+          "lower_op": ">",
+          "upper": 10,
+          "upper_op": "<=",
+          "points": 25
+        }
+      ],
+      "missing_points": 0,
+      "other_points": 0
+    },
+    {
+      "name": "LIQUID_ASSETS",
+      "type": "numeric",
+      "bins": [
+        {
+          "lower": 50000,
+          "lower_op": ">=",
+          "upper": 250000,
+          "upper_op": "<=",
+          "points": 25
+        },
+        {
+          "lower": 250000,
+          "lower_op": ">",
+          "upper": 500000,
+          "upper_op": "<=",
+          "points": 30
+        },
+        {
+          "lower": 500000,
+          "lower_op": ">",
+          "upper": 750000,
+          "upper_op": "<=",
+          "points": 35
+        },
+        {
+          "lower": 750000,
+          "lower_op": ">",
+          "upper": 1000000,
+          "upper_op": "<=",
+          "points": 40
+        }
+      ],
+      "missing_points": 0,
+      "other_points": 0
+    },
+    {
+      "name": "MONTHLY_ALLOWANCE_INCOME",
+      "type": "numeric",
+      "bins": [
+        {
+          "lower": 0,
+          "lower_op": ">=",
+          "upper": 1200,
+          "upper_op": "<=",
+          "points": 15
+        },
+        {
+          "lower": 1200,
+          "lower_op": ">",
+          "upper": 2600,
+          "upper_op": "<=",
+          "points": 29
+        },
+        {
+          "lower": 2600,
+          "lower_op": ">",
+          "upper": 4500,
+          "upper_op": "<=",
+          "points": 47
+        },
+        {
+          "lower": 4500,
+          "lower_op": ">",
+          "upper": 50000,
+          "upper_op": "<=",
+          "points": 60
+        }
+      ],
+      "missing_points": 0,
+      "other_points": 0
+    },
+    {
+      "name": "TOTAL_MONTHLY_INCOME",
+      "type": "numeric",
+      "bins": [
+        {
+          "lower": 5000,
+          "lower_op": ">=",
+          "upper": 10000,
+          "upper_op": "<=",
+          "points": 20
+        },
+        {
+          "lower": 10000,
+          "lower_op": ">",
+          "upper": 15000,
+          "upper_op": "<=",
+          "points": 20
+        },
+        {
+          "lower": 15000,
+          "lower_op": ">",
+          "upper": 20000,
+          "upper_op": "<=",
+          "points": 20
+        },
+        {
+          "lower": 20000,
+          "lower_op": ">",
+          "upper": 30000,
+          "upper_op": "<=",
+          "points": 68
+        },
+        {
+          "lower": 30000,
+          "lower_op": ">",
+          "upper": 50000,
+          "upper_op": "<=",
+          "points": 80
+        },
+        {
+          "lower": 50000,
+          "lower_op": ">",
+          "upper": 100000,
+          "upper_op": "<=",
+          "points": 88
+        },
+        {
+          "lower": 100000,
+          "lower_op": ">",
+          "upper": 150000,
+          "upper_op": "<=",
+          "points": 96
+        },
+        {
+          "lower": 150000,
+          "lower_op": ">",
+          "upper": 250000,
+          "upper_op": "<=",
+          "points": 100
+        }
+      ],
+      "missing_points": 0,
+      "other_points": 0
+    },
+    {
+      "name": "WORST_DELINQUENCY_12M",
+      "type": "numeric",
+      "bins": [
+        {
+          "values": [
+            0,
+            60
+          ],
+          "points": 110
+        },
+        {
+          "values": [
+            90,
+            120
+          ],
+          "points": 20
+        }
+      ],
+      "missing_points": 0,
+      "other_points": 0
+    }
+  ],
+  "outputs": [
+    {
+      "name": "SCORE",
+      "type": "numeric"
+    },
+    {
+      "name": "DECISION_HINT",
+      "type": "character"
+    }
+  ]
+}

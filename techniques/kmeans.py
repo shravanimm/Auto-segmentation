@@ -63,6 +63,7 @@ from utils.schema_detection import (
     auto_detect_shap_columns,
 )
 
+from utils.outliers import apply_treatment, fit_outlier_bounds, log_outlier_summary
 from utils.preprocessing import (
     canonicalize_path_conditions,
 )
@@ -110,6 +111,7 @@ def fit_encoder(
     dev_df: pd.DataFrame,
     numeric_cols: list[str],
     categorical_cols: list[str],
+    outlier_cfg=None,
 ) -> dict:
     """
     Fit numerical scaling and categorical encoding using Development data only.
@@ -124,6 +126,10 @@ def fit_encoder(
     # Numerical scaler
     # ------------------------------------------------------------------
 
+    outlier_fit = None
+    if outlier_cfg is not None and outlier_cfg.treatment != "none" and numeric_cols:
+        outlier_fit = fit_outlier_bounds(dev_df, numeric_cols, outlier_cfg)
+
     scaler = StandardScaler()
 
     numeric_medians = (
@@ -134,9 +140,10 @@ def fit_encoder(
 
     if numeric_cols:
 
-        numeric_fit = (
-            dev_df[numeric_cols]
-            .fillna(numeric_medians)
+        numeric_fit = apply_treatment(
+            dev_df[numeric_cols].fillna(numeric_medians),
+            outlier_fit,
+            outlier_cfg,
         )
 
         scaler.fit(
@@ -178,6 +185,8 @@ def fit_encoder(
         "categorical_cols": categorical_cols,
         "cat_values": cat_values,
         "numeric_medians": numeric_medians,
+        "outlier_fit": outlier_fit,
+        "outlier_cfg": outlier_cfg,
     }
 
 
@@ -197,13 +206,10 @@ def transform(
 
     if enc["numeric_cols"]:
 
-        X_num = (
-            df[
-                enc["numeric_cols"]
-            ]
-            .fillna(
-                enc["numeric_medians"]
-            )
+        X_num = apply_treatment(
+            df[enc["numeric_cols"]].fillna(enc["numeric_medians"]),
+            enc.get("outlier_fit"),
+            enc.get("outlier_cfg"),
         )
 
         parts.append(
@@ -1331,7 +1337,13 @@ class KMeansSegmentationTechnique(
             dev_df,
             num_cols,
             cat_cols,
+            cfg.outlier,
         )
+
+        if enc["outlier_fit"] is not None:
+            log_outlier_summary(
+                "K-Means", dev_df, mon_df, enc["outlier_fit"]
+            )
 
         # ==================================================================
         # TRANSFORM DATA

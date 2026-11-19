@@ -46,6 +46,15 @@ COLUMN_RENAME_MAP = {
     "mean": "Mean", "std": "Std. Deviation", "min": "Min", "max": "Max",
     "skewness": "Skewness", "kurtosis": "Kurtosis",
     "q25": "25th Percentile", "q50": "Median", "q75": "75th Percentile", "n_outliers": "Outlier Count",
+    # DQ: outliers
+    "method": "Detection Method", "lower_bound": "Lower Fence", "upper_bound": "Upper Fence",
+    "n_outliers": "Outlier Count", "outlier_pct": "Outlier %",
+    "baseline_outlier_pct": "Development Outlier %",
+    "dev_min": "Development Min", "dev_max": "Development Max",
+    "outside_dev_range_pct": "Outside Development Range %",
+    "valid_range": "Valid Range (Rule)", "range_violations": "Range Violations",
+    "check": "Check", "n_rows": "Rows Flagged", "row_pct": "Rows Flagged %",
+    "baseline_row_pct": "Development Rows Flagged %",
     # DQ: blockers / governance
     "rule": "Rule Triggered", "detail": "Details", "risk_type": "Risk Type",
     # DQ: health

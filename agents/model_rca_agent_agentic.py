@@ -1,17 +1,10 @@
 """
-agents/model_rca_agent_agentic.py
-Experimental v2 of the Model RCA Agent: real tool-calling instead of
-model_rca_agent.py's "assemble everything, one LLM call" approach.
 
 The question goes to the LLM first. The LLM decides which of the three
 Tool contexts (DQ / DD / SEG) it actually needs, calls only those, and
 writes its answer grounded in just what it asked for -- instead of always
 seeing all three regardless of what was asked.
 
-This is intentionally a separate module, not a rewrite of
-model_rca_agent.py: that file (and its prompt, llm/prompts/rca_prompt.md)
-is left completely untouched so the app can fall back to it at any time
--- see the toggle in streamlit_app.py's Home tab chat panel.
 
 Underlying Tool outputs, DQ/DD/SEG math, and the Home tab checkboxes are
 unchanged; only how the chat step picks which of those outputs to look at

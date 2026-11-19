@@ -38,8 +38,17 @@ from __future__ import annotations
 import math
 from typing import Optional, Sequence, Union
 
+import os
+import sys
+
 import numpy as np
 import pandas as pd
+
+if __name__ == "__main__":  # allow the standalone self-check to find models/ and utils/
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
+
+from models.config import OutlierConfig
+from utils.outliers import count_range_violations, fit_outlier_bounds, flag_outliers
 
 ColumnList = Optional[Union[str, Sequence[str]]]
 
@@ -212,11 +221,76 @@ def dq_tech4_healthscore(profile: pd.DataFrame, blockers: pd.DataFrame, governan
     return health, readiness_score
 
 
+def dq_tech5_outliers(df: pd.DataFrame, numeric_cols: Sequence[str], fit: Optional[dict] = None,
+                       outlier_cfg: Optional[OutlierConfig] = None,
+                       review_pct: float = 5.0, shift_pp: float = 2.0):
+    """Robust outlier profiling (utils/outliers.py: double-MAD fences with IQR
+    fallback, plus an Isolation Forest for unusual feature combinations).
+
+    Development data fits the fences (``fit=None``); a monitoring dataset is
+    scored against the *development* fit (pass it as ``fit``) so its outlier
+    rate is directly comparable and a jump is a drift signal.
+
+    Returns ``(per_feature_df, row_level_df, fit)``."""
+    cfg = outlier_cfg or OutlierConfig()
+    is_baseline = fit is None
+    if is_baseline:
+        fit = fit_outlier_bounds(df, list(numeric_cols), cfg)
+
+    flags = flag_outliers(df, fit)
+    cols = ["name", "method", "dev_min", "dev_max", "lower_bound", "upper_bound", "n_outliers",
+            "outlier_pct", "baseline_outlier_pct", "outside_dev_range_pct", "valid_range", "range_violations", "status"]
+    rows = []
+    for c, (lo, hi, method) in fit["bounds"].items():
+        if c not in df.columns:
+            continue
+        v = pd.to_numeric(df[c], errors="coerce").dropna()
+        n_out = int(((v < lo) | (v > hi)).sum())
+        pct = 100.0 * n_out / len(v) if len(v) else 0.0
+        base = pct if is_baseline else fit.setdefault("baseline_rates", {}).get(c, np.nan)
+        if is_baseline:
+            fit.setdefault("baseline_rates", {})[c] = pct
+            status = "review" if pct > review_pct else "ok"
+        else:
+            status = "elevated" if (pct - base >= shift_pp and pct >= 2 * base) else "ok"
+        dmin, dmax = fit["ranges"][c]
+        outside = 100.0 * float(((v < dmin) | (v > dmax)).mean()) if len(v) else 0.0
+        if not is_baseline and status == "ok" and outside >= 1.0:
+            status = "new_range"  # values never seen in development
+        vr = fit.get("valid_ranges", {}).get(c)
+        violations = count_range_violations(v, vr)
+        if violations:
+            status = "range_violation"  # breaks a configured business rule
+        rows.append({"name": c, "method": method, "dev_min": dmin, "dev_max": dmax,
+                     "lower_bound": lo, "upper_bound": hi, "n_outliers": n_out, "outlier_pct": pct,
+                     "baseline_outlier_pct": base, "outside_dev_range_pct": outside,
+                     "valid_range": "" if not vr else f"[{'-inf' if vr[0] is None else vr[0]}, {'inf' if vr[1] is None else vr[1]}]",
+                     "range_violations": violations, "status": status})
+    per_feature = (pd.DataFrame(rows, columns=cols)
+                   .sort_values("outlier_pct", ascending=False, ignore_index=True))
+
+    row_rows = []
+    labels = {"outlier_univariate": "Rows with at least one out-of-range feature",
+              "outlier_multivariate": "Rows with an unusual feature combination (Isolation Forest)"}
+    for key, label in labels.items():
+        if key in flags:
+            pct = 100.0 * float(flags[key].mean())
+            br = fit.setdefault("baseline_row_rates", {})
+            if is_baseline:
+                br[key] = pct
+            row_rows.append({"check": label, "n_rows": int(flags[key].sum()), "row_pct": pct,
+                             "baseline_row_pct": br.get(key, np.nan)})
+    row_level = pd.DataFrame(row_rows, columns=["check", "n_rows", "row_pct", "baseline_row_pct"])
+    return per_feature, row_level, fit
+
+
 def dq_calc_wrapper(df: pd.DataFrame, target_col: Optional[str] = None,
                      id_cols: ColumnList = None, private_cols: ColumnList = None,
                      missing_thresh: float = 50, id_uniqueness_thresh: float = 99.9,
-                     leakage_card_min: float = 50) -> dict:
-    """<-> %dq_calc_wrapper. Orchestrates the 4 DQ techniques for one dataset."""
+                     leakage_card_min: float = 50, outlier_fit: Optional[dict] = None,
+                     valid_ranges: Optional[dict] = None) -> dict:
+    """<-> %dq_calc_wrapper. Orchestrates the 4 DQ techniques for one dataset,
+    plus robust outlier profiling (``outlier_fit`` = development fit when scoring monitoring)."""
     profile = dq_tech1_profile(df)
     blockers = dq_tech2_blockers(profile, missing_thresh=missing_thresh)
     governance = dq_tech3_governance(profile, id_cols=id_cols, private_cols=private_cols,
@@ -225,9 +299,26 @@ def dq_calc_wrapper(df: pd.DataFrame, target_col: Optional[str] = None,
                                       leakage_card_min=leakage_card_min)
     health, readiness_score = dq_tech4_healthscore(profile, blockers, governance)
 
+    # Continuous floats are ~100% unique and trip the IDENTIFIER rule, so only
+    # integer-typed or explicitly declared IDs are excluded from outlier checks.
+    id_set = set(_split_cols(id_cols))
+    id_flagged = governance.loc[governance["risk_type"] == "IDENTIFIER", "name"]
+    skip = set(blockers["name"]) | {
+        c for c in id_flagged
+        if str(c).upper() in id_set or pd.api.types.is_integer_dtype(df[c])
+    }
+    if target_col:
+        skip.add(target_col)
+    num_cols = [c for c in df.columns
+                if pd.api.types.is_numeric_dtype(df[c]) and not pd.api.types.is_bool_dtype(df[c])
+                and c not in skip]
+    outliers, outlier_rows, outlier_fit = dq_tech5_outliers(df, num_cols, fit=outlier_fit,
+                                                           outlier_cfg=OutlierConfig(valid_ranges=valid_ranges or {}))
+
     return {
         "profile": profile, "blockers": blockers, "governance": governance,
         "health": health, "readiness_score": readiness_score,
+        "outliers": outliers, "outlier_rows": outlier_rows, "outlier_fit": outlier_fit,
     }
 
 
@@ -567,7 +658,8 @@ def main_wrapper(dev_dta: pd.DataFrame, mon_dta: Optional[pd.DataFrame] = None,
                   leakage_card_min: float = 50,
                   psi_stable: float = 0.10, psi_shift: float = 0.25,
                   ks_stable: float = 0.10, ks_shift: float = 0.20,
-                  drift_notable: float = 3, drift_critical: float = 8) -> dict:
+                  drift_notable: float = 3, drift_critical: float = 8,
+                  valid_ranges: Optional[dict] = None) -> dict:
     """<-> %main_wrapper. order= DQ_FIRST | DRIFT_FIRST, matching the SAS
     entry point's flag-driven orchestration."""
     results = {}
@@ -577,12 +669,13 @@ def main_wrapper(dev_dta: pd.DataFrame, mon_dta: Optional[pd.DataFrame] = None,
             results["dq_dev"] = dq_calc_wrapper(
                 dev_dta, target_col=target_col, id_cols=id_cols, private_cols=private_cols,
                 missing_thresh=missing_thresh, id_uniqueness_thresh=id_uniqueness_thresh,
-                leakage_card_min=leakage_card_min)
+                leakage_card_min=leakage_card_min, valid_ranges=valid_ranges)
             if mon_dta is not None:
                 results["dq_mon"] = dq_calc_wrapper(
                     mon_dta, target_col=target_col, id_cols=id_cols, private_cols=private_cols,
                     missing_thresh=missing_thresh, id_uniqueness_thresh=id_uniqueness_thresh,
-                    leakage_card_min=leakage_card_min)
+                    leakage_card_min=leakage_card_min,
+                    outlier_fit=results["dq_dev"]["outlier_fit"])
 
     def _run_drift():
         if is_drift_req and mon_dta is not None:

@@ -149,7 +149,8 @@
     %seg_eval_pool(cand=_gb_cand, defs=_gb_cand, rules=_gb_rl, shap_cols=&shap_cols);
     %seg_publish(technique=Gradient Boosting, out_prefix=&out_prefix, top_n=&top_n, dedup=Y,
                  overlap=&overlap_jaccard_threshold, pool_size=30, alpha=&significance_alpha,
-                 dropvars=leaf);
+                 dropvars=leaf, closure=LEFT, notmissing=N,
+                 member_note=Missing numeric values are replaced by the median of development and monitoring before the trees are applied);
 
     data &out_prefix._log; set &out_prefix._log; trees_fitted = &ntree; run;
     %let sg_premem = N;

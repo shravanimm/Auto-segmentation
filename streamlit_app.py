@@ -1,3 +1,5 @@
+import contextlib
+import io
 import streamlit as st
 import pandas as pd
 from pathlib import Path
@@ -1864,6 +1866,67 @@ with tab_home:
             rows.append(row)
         return pd.DataFrame(rows)
 
+    def _home_numeric_columns(source) -> list:
+        """Numeric column names from the first rows of a CSV path/upload (upload pointer is reset)."""
+        try:
+            if hasattr(source, "seek"):
+                source.seek(0)
+            head = pd.read_csv(source, nrows=500)
+            if hasattr(source, "seek"):
+                source.seek(0)
+            return [c for c in head.columns
+                    if pd.api.types.is_numeric_dtype(head[c]) and not pd.api.types.is_bool_dtype(head[c])]
+        except Exception:
+            return []
+
+    def _home_collect_valid_ranges(edited: pd.DataFrame) -> dict:
+        """Editor rows -> {feature: (min|None, max|None)}; incomplete or inverted rows are skipped with a warning."""
+        ranges = {}
+        for _, r in edited.iterrows():
+            feat = r.get("Feature")
+            lo = None if pd.isna(r.get("Min")) else float(r["Min"])
+            hi = None if pd.isna(r.get("Max")) else float(r["Max"])
+            if not feat or (lo is None and hi is None):
+                continue
+            if lo is not None and hi is not None and lo > hi:
+                st.warning(f"Valid range for `{feat}` ignored: Min ({lo:g}) is greater than Max ({hi:g}).")
+                continue
+            ranges[feat] = (lo, hi)
+        return ranges
+
+    def _home_render_dq_ranges_input(source) -> dict:
+        with st.expander("Valid ranges for outlier checks (optional)"):
+            st.caption(
+                "Business rules per numeric feature, e.g. age 18 to 100. Leave Min or Max empty for no limit. "
+                "Values outside a range are reported as range violations, and outlier fences are kept inside it. "
+                "Add rows with the + at the bottom of the table. Features you don't list stay unchanged (automatic detection)."
+            )
+            cols = _home_numeric_columns(source)
+            feature_col = (
+                st.column_config.SelectboxColumn("Feature", options=cols, required=True)
+                if cols else st.column_config.TextColumn("Feature", required=True)
+            )
+            edited = st.data_editor(
+                pd.DataFrame({"Feature": pd.Series(dtype="object"),
+                              "Min": pd.Series(dtype="float"), "Max": pd.Series(dtype="float")}),
+                num_rows="dynamic", hide_index=True, use_container_width=True, key="home_valid_ranges_editor",
+                column_config={
+                    "Feature": feature_col,
+                    "Min": st.column_config.NumberColumn("Min"),
+                    "Max": st.column_config.NumberColumn("Max"),
+                },
+            )
+            ranges = _home_collect_valid_ranges(edited)
+            if ranges:
+                applied = ", ".join(
+                    f"`{f}` {'-inf' if lo is None else f'{lo:g}'} to {'inf' if hi is None else f'{hi:g}'}"
+                    for f, (lo, hi) in ranges.items()
+                )
+                st.caption(f"Applied rules: {applied}. All other numeric features keep fully automatic outlier detection.")
+            else:
+                st.caption("No rules set: every numeric feature uses fully automatic outlier detection.")
+            return ranges
+
     def _home_subheading(text: str, color: str):
         st.markdown(f'<div class="result-subheading {color}">{text}</div>', unsafe_allow_html=True)
 
@@ -1888,6 +1951,17 @@ with tab_home:
         if hasattr(governance, "empty") and not governance.empty:
             st.caption("Columns flagged as identifiers, potential leakage, or privacy-sensitive.")
             st.dataframe(governance.rename(columns=COLUMN_RENAME_MAP), use_container_width=True, hide_index=True)
+        outliers = dq_result.get("outliers")
+        if hasattr(outliers, "empty") and not outliers.empty:
+            st.caption(
+                "Outliers: values far outside a feature's normal range. Fences use a skew-aware robust rule "
+                "(median +/- 3.5 scaled MAD per side, IQR fallback) learned from the development data; "
+                "monitoring is scored against the same fences, so a higher % than development signals a shift."
+            )
+            st.dataframe(outliers.rename(columns=COLUMN_RENAME_MAP), use_container_width=True, hide_index=True)
+            outlier_rows = dq_result.get("outlier_rows")
+            if hasattr(outlier_rows, "empty") and not outlier_rows.empty:
+                st.dataframe(outlier_rows.rename(columns=COLUMN_RENAME_MAP), use_container_width=True, hide_index=True)
         profile = dq_result.get("profile")
         if hasattr(profile, "empty") and not profile.empty:
             with st.expander("Full Column Profile (advanced)"):
@@ -2115,6 +2189,12 @@ with tab_home:
                     f"Monitoring: `{Path(MON_FILE).name}`."
                 )
 
+        home_valid_ranges: dict = {}
+        if home_run_dq and not home_nothing_checked:
+            _first_src = (next(iter(home_dq_files.values()), None) if home_dq_only else home_dev_source)
+            if _first_src is not None:
+                home_valid_ranges = _home_render_dq_ranges_input(_first_src)
+
         st.write("")
         home_run_clicked = st.button(
             "Run Analysis", key="home_run_button", type="primary", icon=":material/play_arrow:"
@@ -2153,6 +2233,7 @@ with tab_home:
                                 df_i, None, is_dq_req=True,
                                 target_col=schema_i.target_col, id_cols=schema_i.id_cols,
                                 feature_cols=schema_i.numeric_cols, categorical_cols=schema_i.categorical_cols,
+                                valid_ranges=home_valid_ranges,
                             )
                             st.session_state["home_dq_results"][name] = out.get("dq_dev")
                         except Exception as e:
@@ -2178,6 +2259,7 @@ with tab_home:
                                     target_col=home_schema_cfg.target_col, id_cols=home_schema_cfg.id_cols,
                                     feature_cols=home_schema_cfg.numeric_cols,
                                     categorical_cols=home_schema_cfg.categorical_cols,
+                                    valid_ranges=home_valid_ranges,
                                 )
                                 st.session_state["home_dq_results"][home_dev_name] = dev_dq_out.get("dq_dev")
                                 st.session_state["home_dev_filename"] = home_dev_name
@@ -2197,6 +2279,23 @@ with tab_home:
                                 st.warning(f"Could not read {name}: {e}")
                                 continue
 
+                            _needed = [
+                                c for c in (
+                                    list(home_schema_cfg.numeric_cols or [])
+                                    + list(home_schema_cfg.categorical_cols or [])
+                                    + [home_schema_cfg.target_col, home_schema_cfg.score_col]
+                                ) if c
+                            ]
+                            _missing = sorted({c for c in _needed if c not in mon_df.columns})
+                            if _missing:
+                                st.warning(
+                                    f"Skipped {name}: its columns don't match the baseline "
+                                    f"dataset. Missing: {', '.join(_missing)}. "
+                                    f"Rename them to match (e.g. debt_to_income -> dti) or "
+                                    f"use a monitoring file with the same schema."
+                                )
+                                continue
+
                             if home_run_dq or home_run_dd:
                                 try:
                                     out = main_wrapper(
@@ -2205,6 +2304,7 @@ with tab_home:
                                         target_col=home_schema_cfg.target_col, score_col=home_schema_cfg.score_col,
                                         id_cols=home_schema_cfg.id_cols, feature_cols=home_schema_cfg.numeric_cols,
                                         categorical_cols=home_schema_cfg.categorical_cols,
+                                        valid_ranges=home_valid_ranges,
                                     )
                                     if home_run_dq:
                                         st.session_state["home_dq_results"][name] = out.get("dq_mon")
@@ -2215,9 +2315,14 @@ with tab_home:
 
                             if home_run_seg:
                                 try:
-                                    st.session_state["home_seg_results"][name] = benchmark_all_techniques(
-                                        home_dev_df, mon_df, save_outputs=False, schema_cfg=home_schema_cfg,
-                                    )
+                                    # benchmark_all_techniques prints progress/summary
+                                    # tables; when the server's stdout pipe is closed
+                                    # (e.g. launched from a detached shell) that raises
+                                    # BrokenPipeError, so swallow the console output.
+                                    with contextlib.redirect_stdout(io.StringIO()):
+                                        st.session_state["home_seg_results"][name] = benchmark_all_techniques(
+                                            home_dev_df, mon_df, save_outputs=False, schema_cfg=home_schema_cfg,
+                                        )
                                 except Exception as e:
                                     st.warning(f"Segmentation failed for {name}: {e}")
 

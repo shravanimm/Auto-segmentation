@@ -1,0 +1,33 @@
+{
+  "_comment": "POST /microanalyticScore/modules/test__rla_ud_model2--6/steps/score  (verify the step id with GET .../modules/test__rla_ud_model2--6/steps). Expected SCORECARD_POINTS: record 1 = 797, record 2 = 423 (cutoff about 510: 1 accepts, 2 rejects)",
+  "record_1_low_risk": {
+    "inputs": [
+      {"name": "CREDIT_RANGE", "value": "PRIME"},
+      {"name": "INQUIRIES_90_DAYS", "value": 2},
+      {"name": "MONTHLY_ALLOWANCE_INCOME", "value": 2911},
+      {"name": "LIQUID_ASSETS", "value": 564196},
+      {"name": "DEFAULTS_COUNT", "value": 0},
+      {"name": "DEPENDANTS", "value": 3},
+      {"name": "BUREAU_SCORE", "value": 801},
+      {"name": "TOTAL_MONTHLY_INCOME", "value": 34209},
+      {"name": "EMPLOYMENT_STATUS", "value": "SELF_EMPLOYED"},
+      {"name": "AGE", "value": 40},
+      {"name": "WORST_DELINQUENCY_12M", "value": 0}
+    ]
+  },
+  "record_2_high_risk": {
+    "inputs": [
+      {"name": "CREDIT_RANGE", "value": "HIGH_RISK"},
+      {"name": "INQUIRIES_90_DAYS", "value": 4},
+      {"name": "MONTHLY_ALLOWANCE_INCOME", "value": 21571},
+      {"name": "LIQUID_ASSETS", "value": 622975},
+      {"name": "DEFAULTS_COUNT", "value": 2},
+      {"name": "DEPENDANTS", "value": 0},
+      {"name": "BUREAU_SCORE", "value": 503},
+      {"name": "TOTAL_MONTHLY_INCOME", "value": 188762},
+      {"name": "EMPLOYMENT_STATUS", "value": "EMPLOYED"},
+      {"name": "AGE", "value": 30},
+      {"name": "WORST_DELINQUENCY_12M", "value": 120}
+    ]
+  }
+}

@@ -46,8 +46,8 @@
             data _km_row;
                 k = &k; min_cluster_pct = &minfrac; composite = .;
                 length rejected_reason $100;
-                rejected_reason = cats('smallest cluster ', put(100 * &minfrac, 8.1), '% < floor ',
-                                       put(100 * &min_cluster_pct, 8.0), '%');
+                rejected_reason = cat('smallest cluster ', strip(put(100 * &minfrac, 8.1)), '% < floor ',
+                                      strip(put(100 * &min_cluster_pct, 8.0)), '%');
             run;
             proc append base=_km_diag data=_km_row force; run;
         %end;

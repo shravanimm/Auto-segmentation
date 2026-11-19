@@ -37,6 +37,13 @@
 %include segmac(seg_rank_dedup.sas);
 %include segmac(seg_eval_pool.sas);
 %include segmac(seg_publish.sas);
+/* ---- automatic schema, global config, auto-optimisation helpers, explainability ---- */
+%include segmac(seg_config.sas);
+%include segmac(seg_detect_schema.sas);
+%include segmac(seg_grid.sas);
+%include segmac(seg_metric_dictionary.sas);
+%include segmac(seg_apply_labels.sas);
+%include segmac(seg_add_explain.sas);
 
 /* ---- CART engine (Drift Tree, Gradient Boosting, K-Means rules) ---- */
 %include segmac(seg_tree_matrix.sas);
@@ -54,6 +61,7 @@
 
 /* ---- Drift Tree / Gradient Boosting ---- */
 %include segmac(seg_drift_tree.sas);
+%include segmac(seg_drift_tree_grid.sas);
 %include segmac(seg_gradient_boosting.sas);
 
 /* ---- K-Means ---- */
@@ -73,10 +81,21 @@
 %include segmac(seg_fb_bootstrap.sas);
 %include segmac(seg_fb_score.sas);
 %include segmac(seg_feature_binning.sas);
+%include segmac(seg_feature_binning_grid.sas);
 
 /* ---- cross-technique, entry point, parity tooling ---- */
 %include segmac(seg_cross_technique.sas);
+%include segmac(seg_viz_prepare.sas);
+%include segmac(seg_viz_prepare_trend.sas);
+%include segmac(seg_viz_charts.sas);
+%include segmac(seg_viz_publish_cas.sas);
+%include segmac(seg_viz_from_cas.sas);
+%include segmac(seg_trend_collect.sas);
+%include segmac(seg_trend_metrics.sas);
+%include segmac(seg_trend_forecast.sas);
 %include segmac(csb_segmentation_calc_wrapper.sas);
+%include segmac(csb_segmentation_trend_wrapper.sas);
+%include segmac(csb_segmentation_run.sas);
 %include segmac(seg_compare_to_golden.sas);
 
 %put NOTE: All segmentation macros compiled from the segmac folder;

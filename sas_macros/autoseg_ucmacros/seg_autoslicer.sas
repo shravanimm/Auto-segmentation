@@ -142,7 +142,8 @@
     /* ---------------- final scoring, ranking, de-dup, publish ---------------- */
     %seg_publish(technique=AutoSlicer, out_prefix=&out_prefix, top_n=&top_n, dedup=Y,
                  overlap=&overlap_jaccard_threshold, pool_size=30, alpha=&significance_alpha,
-                 dropvars=h depth c1-c&sg_nf);
+                 dropvars=h depth c1-c&sg_nf, closure=LEFT, notmissing=Y,
+                 member_note=Rows with a missing value of a numeric feature are never inside a segment that uses that feature);
 
     /* AutoSlicer-specific log columns */
     data &out_prefix._log;
